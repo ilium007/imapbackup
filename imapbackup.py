@@ -240,8 +240,9 @@ def scan_folder(server, foldername, nospinner):
     for num in range(1, num_msgs+1):
       # Retrieve Message-Id, making sure we don't mark all messages as read
       typ, data = server.fetch(num, '(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])')
-      if 'OK' != typ:
-        raise SkipFolderException("FETCH %s failed: %s" % (num, data))
+      if 'OK' != typ or data is None or data[0] is None:
+        print "FETCH %s failed: %s" % (num, data)
+        continue
  
       header = data[0][1].strip()
       # remove newlines inside Message-Id (a dumb Exchange trait)
@@ -256,7 +257,8 @@ def scan_folder(server, foldername, nospinner):
         # (this usually happens with Sent, Drafts and .Mac news)
         typ, data = server.fetch(num, '(BODY[HEADER.FIELDS (FROM TO CC DATE SUBJECT)])')
         if 'OK' != typ:
-          raise SkipFolderException("FETCH %s failed: %s" % (num, data))
+          print "FETCH %s failed: %s" % (num, data)
+          continue
         header = data[0][1].strip()
         header = header.replace('\r\n','\t')
         messages['<' + UUID + '.' + hashlib.sha1(header).hexdigest() + '>'] = num
