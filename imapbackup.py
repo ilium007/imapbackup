@@ -257,6 +257,8 @@ def scan_file(filename, compress, overwrite, nospinner):
 def scan_folder(server, foldername, nospinner):
   """Gets IDs of messages in the specified folder, returns id:num dict"""
   messages = {}
+  if any(foldername.startswith(f) for f in ["Calendar", "Contacts"]):
+    raise SkipFolderException("Skipping non-email folder %s" % foldername)
   spinner = Spinner("Folder %s" % (foldername), nospinner)
   try:
     typ, data = server.select(foldername, readonly=True)
